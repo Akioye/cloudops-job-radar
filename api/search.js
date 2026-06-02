@@ -18,50 +18,88 @@ export default async function handler(req, res) {
   const salNote = minSalary ? ` Only include roles with salary above $${parseInt(minSalary).toLocaleString()} or equivalent.` : '';
   const kwNote  = extraKeywords ? ` Extra focus: ${extraKeywords}.` : '';
 
-  // Build source instructions based on mode
   let sourceInstructions = '';
+
   if (sourceMode === 'company') {
     sourceInstructions = `
-SOURCE RULES — COMPANY CAREER PAGES ONLY:
-- STRICTLY return jobs from direct company career pages and ATS platforms ONLY
-- DO NOT return any results from Indeed, LinkedIn, Glassdoor, ZipRecruiter, Monster, or ANY job aggregator
-- ONLY use: boards.greenhouse.io, jobs.lever.co, jobs.ashby.com, app.dover.com, workday.com, icims.com, wellfound.com, remotive.com, weworkremotely.com, himalayas.app, remote.co, jobspresso.co, workingnomads.com, nofluffjobs.com
-- Also search company career pages directly: careers.cloudflare.com, hashicorp.com/jobs, gruntwork.io/careers, careers.google.com, aws.amazon.com/careers, jobs.netflix.com, stripe.com/jobs, datadoghq.com/careers, mongodb.com/careers, elastic.co/careers, confluent.io/careers, fastly.com/careers
-- Every applyUrl must be a direct link to the job on the company's own hiring system`;
+SOURCE MODE: COMPANY CAREER PAGES ONLY — THIS IS STRICT
+
+A "company career page" means the URL domain matches the company's own brand name.
+VALID examples:
+- stripe.com/jobs → Stripe's own site ✅
+- careers.cloudflare.com → Cloudflare's own site ✅
+- netflix.jobs → Netflix's own site ✅
+- hashicorp.com/jobs → HashiCorp's own site ✅
+- datadoghq.com/careers → Datadog's own site ✅
+- gruntwork.io/careers → Gruntwork's own site ✅
+- careers.google.com → Google's own site ✅
+- amazon.jobs → Amazon's own site ✅
+- gitlab.com/jobs → GitLab's own site ✅
+- figma.com/careers → Figma's own site ✅
+
+INVALID — these are third-party platforms, NOT company sites, NEVER use them:
+- lever.co ❌
+- greenhouse.io ❌
+- ashby.com ❌
+- workday.com ❌
+- dover.com ❌
+- himalayas.app ❌
+- remotive.com ❌
+- wellfound.com ❌
+- weworkremotely.com ❌
+- indeed.com ❌
+- linkedin.com ❌
+- glassdoor.com ❌
+- ziprecruiter.com ❌
+- jobspresso.co ❌
+- remote.co ❌
+- monster.com ❌
+- simplyhired.com ❌
+- dice.com ❌
+
+RULE: If the URL domain does not contain the company's own name/brand, REJECT IT. Do not include that job.
+
+HOW TO FIND THEM:
+- Search "site:careers.[companyname].com remote [role]"
+- Search "[company name] careers remote [role] 2026"
+- Search "[company name] jobs remote devops cloud engineer"
+- Go directly to known tech company career pages: stripe.com/jobs, cloudflare.com/careers, hashicorp.com/jobs, datadoghq.com/careers, mongodb.com/careers, elastic.co/careers, confluent.io/careers, fastly.com/careers, twilio.com/jobs, pagerduty.com/careers, newrelic.com/about/careers, rubrik.com/careers, lacework.com/careers, snyk.io/careers, gitlab.com/jobs, atlassian.com/company/careers, github.com/about/careers, cloudsmith.com/careers, teleport.com/careers, gruntwork.io/careers, doppler.com/careers, dbt labs.com/careers, fivetran.com/careers, airbyte.com/careers, cockroachlabs.com/careers, coreweave.com/careers, pinecone.io/careers, modal.com/careers, fly.io/jobs
+
+Only return a job if you have verified the direct company career page URL.`;
+
   } else if (sourceMode === 'linkedin') {
     sourceInstructions = `
-SOURCE RULES — LINKEDIN ONLY:
-- ONLY return jobs posted on LinkedIn
-- All applyUrl links must be linkedin.com/jobs URLs
-- Search linkedin.com/jobs for remote ${roles.join(', ')} roles in ${countries.join(', ')}`;
+SOURCE MODE: LINKEDIN ONLY
+- All applyUrl values must be linkedin.com/jobs URLs
+- Search linkedin.com/jobs for remote ${roles.join(', ')} in ${countries.join(', ')}`;
+
   } else if (sourceMode === 'indeed') {
     sourceInstructions = `
-SOURCE RULES — INDEED ONLY:
-- ONLY return jobs posted on Indeed
-- All applyUrl links must be indeed.com URLs
-- Search indeed.com for remote ${roles.join(', ')} roles in ${countries.join(', ')}`;
+SOURCE MODE: INDEED ONLY
+- All applyUrl values must be indeed.com URLs
+- Search indeed.com for remote ${roles.join(', ')} in ${countries.join(', ')}`;
+
   } else {
-    // 'all' — no restriction
     sourceInstructions = `
-SOURCE RULES — ALL SOURCES:
-- Search across all job boards: Indeed, LinkedIn, Greenhouse, Lever, Ashby, Wellfound, Remotive, We Work Remotely, Himalayas, company career pages
-- Prioritise direct company career page links over aggregators where possible`;
+SOURCE MODE: ALL SOURCES
+- Search across Indeed, LinkedIn, and company career pages
+- Prefer direct company career page links where available`;
   }
 
-  const prompt = `Today is ${today}. You are a job search specialist. Search for real, currently open, fully remote job postings for these roles: ${roles.join(', ')}. Target countries: ${countries.join(', ')}. Posted within the last ${days} days.${salNote}${kwNote}
+  const prompt = `Today is ${today}. You are a job search specialist. Find real, currently open, fully remote job postings for: ${roles.join(', ')}. Target countries: ${countries.join(', ')}. Posted within the last ${days} days.${salNote}${kwNote}
 
 ${sourceInstructions}
 
-GENERAL RULES:
-- Each job must have a UNIQUE direct application URL — no duplicates
-- No more than 1 job per company — spread results across different employers
-- Prioritise well-known tech companies, unicorn startups, SaaS companies, cloud-native firms
-- Return exactly ${count} jobs if available
+ADDITIONAL RULES:
+- No more than 1 job per company
+- Each applyUrl must be unique
+- Target well-known tech companies, SaaS companies, cloud-native firms, unicorn startups
+- Return exactly ${count} jobs
 
-Return ONLY a JSON array (no markdown, no preamble, no explanation) of up to ${count} jobs:
-[{"company":"Name","title":"Exact Title","country":"United States","salary":"$120k-$150k" or null,"applyUrl":"https://...","postedDate":"YYYY-MM-DD or relative","resumeKeywords":["kw1","kw2","kw3","kw4","kw5"],"techSkills":["s1","s2","s3","s4","s5"]}]
+Return ONLY a raw JSON array, no markdown, no explanation, no preamble:
+[{"company":"Stripe","title":"Senior DevOps Engineer","country":"United States","salary":"$150k-$180k","applyUrl":"https://stripe.com/jobs/listing/...","postedDate":"2026-05-30","resumeKeywords":["kw1","kw2","kw3","kw4","kw5"],"techSkills":["s1","s2","s3","s4","s5"]}]
 
-"country" must be one of: ${countries.join(', ')}. Return ONLY valid JSON array, nothing else.`;
+"country" must be one of: ${countries.join(', ')}. Return ONLY the JSON array.`;
 
   try {
     const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
@@ -88,7 +126,24 @@ Return ONLY a JSON array (no markdown, no preamble, no explanation) of up to ${c
     const end   = text.lastIndexOf(']');
     if (start === -1 || end === -1) return res.status(500).json({ error: 'No job data returned. Try again.' });
 
-    const jobs = JSON.parse(text.slice(start, end + 1));
+    // Post-process: if company mode, strip any jobs where the URL domain doesn't look like a company site
+    let jobs = JSON.parse(text.slice(start, end + 1));
+
+    if (sourceMode === 'company') {
+      const blacklist = ['lever.co','greenhouse.io','ashby.com','workday.com','dover.com',
+        'himalayas.app','remotive.com','wellfound.com','weworkremotely.com','indeed.com',
+        'linkedin.com','glassdoor.com','ziprecruiter.com','jobspresso.co','remote.co',
+        'monster.com','simplyhired.com','dice.com','smartrecruiters.com','jobvite.com',
+        'icims.com','taleo.net','successfactors.com','breezy.hr','bamboohr.com'];
+      jobs = jobs.filter(j => {
+        if (!j.applyUrl) return false;
+        try {
+          const domain = new URL(j.applyUrl).hostname.toLowerCase();
+          return !blacklist.some(b => domain.includes(b));
+        } catch { return false; }
+      });
+    }
+
     return res.status(200).json({ jobs });
 
   } catch (err) {
