@@ -9,38 +9,59 @@ export default async function handler(req, res) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return res.status(500).json({ error: 'ANTHROPIC_API_KEY not configured in Vercel environment variables.' });
 
-  const { roles, countries, days, minSalary, extraKeywords } = req.body;
+  const { roles, countries, days, minSalary, extraKeywords, sourceMode, resultCount } = req.body;
   if (!roles || !roles.length) return res.status(400).json({ error: 'No roles provided.' });
   if (!countries || !countries.length) return res.status(400).json({ error: 'No countries selected.' });
 
   const today = new Date().toISOString().split('T')[0];
-
-  const boardMap = {
-    'United States': 'LinkedIn, Indeed, Greenhouse, Lever, Workday, Wellfound, Dice',
-    'Canada':        'LinkedIn, Indeed Canada, Workopolis, Glassdoor CA, WellFound',
-    'United Kingdom':'LinkedIn, Indeed UK, TotalJobs, CWJobs, Reed.co.uk',
-    'Germany':       'LinkedIn, Indeed DE, StepStone, XING, Glassdoor DE',
-    'Netherlands':   'LinkedIn, Indeed NL, Nationale Vacaturebank, Monsterboard',
-    'France':        'LinkedIn, Indeed FR, Welcome to the Jungle, Apec',
-    'Ireland':       'LinkedIn, Indeed IE, IrishJobs.ie, Jobs.ie',
-    'Spain':         'LinkedIn, Indeed ES, InfoJobs, Tecnoempleo',
-    'Poland':        'LinkedIn, Indeed PL, Pracuj.pl, NoFluffJobs',
-    'Portugal':      'LinkedIn, Indeed PT, Landing.jobs, Sapo Emprego',
-  };
-
-  const countryList = countries.join(', ');
-  const boardList = [...new Set(countries.flatMap(c => (boardMap[c] || 'LinkedIn, Indeed').split(', ')))].join(', ');
+  const count = parseInt(resultCount) || 20;
   const salNote = minSalary ? ` Only include roles with salary above $${parseInt(minSalary).toLocaleString()} or equivalent.` : '';
   const kwNote  = extraKeywords ? ` Extra focus: ${extraKeywords}.` : '';
 
-  const prompt = `Today is ${today}. Search for currently posted fully remote job openings for these roles: ${roles.join(', ')}. Target countries: ${countryList}. Posted within the last ${days} days.${salNote}${kwNote}
+  // Build source instructions based on mode
+  let sourceInstructions = '';
+  if (sourceMode === 'company') {
+    sourceInstructions = `
+SOURCE RULES — COMPANY CAREER PAGES ONLY:
+- STRICTLY return jobs from direct company career pages and ATS platforms ONLY
+- DO NOT return any results from Indeed, LinkedIn, Glassdoor, ZipRecruiter, Monster, or ANY job aggregator
+- ONLY use: boards.greenhouse.io, jobs.lever.co, jobs.ashby.com, app.dover.com, workday.com, icims.com, wellfound.com, remotive.com, weworkremotely.com, himalayas.app, remote.co, jobspresso.co, workingnomads.com, nofluffjobs.com
+- Also search company career pages directly: careers.cloudflare.com, hashicorp.com/jobs, gruntwork.io/careers, careers.google.com, aws.amazon.com/careers, jobs.netflix.com, stripe.com/jobs, datadoghq.com/careers, mongodb.com/careers, elastic.co/careers, confluent.io/careers, fastly.com/careers
+- Every applyUrl must be a direct link to the job on the company's own hiring system`;
+  } else if (sourceMode === 'linkedin') {
+    sourceInstructions = `
+SOURCE RULES — LINKEDIN ONLY:
+- ONLY return jobs posted on LinkedIn
+- All applyUrl links must be linkedin.com/jobs URLs
+- Search linkedin.com/jobs for remote ${roles.join(', ')} roles in ${countries.join(', ')}`;
+  } else if (sourceMode === 'indeed') {
+    sourceInstructions = `
+SOURCE RULES — INDEED ONLY:
+- ONLY return jobs posted on Indeed
+- All applyUrl links must be indeed.com URLs
+- Search indeed.com for remote ${roles.join(', ')} roles in ${countries.join(', ')}`;
+  } else {
+    // 'all' — no restriction
+    sourceInstructions = `
+SOURCE RULES — ALL SOURCES:
+- Search across all job boards: Indeed, LinkedIn, Greenhouse, Lever, Ashby, Wellfound, Remotive, We Work Remotely, Himalayas, company career pages
+- Prioritise direct company career page links over aggregators where possible`;
+  }
 
-Search these job boards: ${boardList}. Also check company career pages. Focus on tech companies, cloud-native startups, consulting firms, and enterprises actively hiring.
+  const prompt = `Today is ${today}. You are a job search specialist. Search for real, currently open, fully remote job postings for these roles: ${roles.join(', ')}. Target countries: ${countries.join(', ')}. Posted within the last ${days} days.${salNote}${kwNote}
 
-Return ONLY a JSON array (no markdown, no preamble, no explanation) of 15-20 jobs with this exact structure:
-[{"company":"Name","title":"Exact Title","country":"United States","salary":"$120k-$150k" or null,"applyUrl":"https://...","postedDate":"YYYY-MM-DD or relative like '2 days ago'","resumeKeywords":["kw1","kw2","kw3","kw4","kw5"],"techSkills":["s1","s2","s3","s4","s5"]}]
+${sourceInstructions}
 
-"country" must be one of the target countries. Use real job URLs. resumeKeywords = ATS-optimized resume phrases. techSkills = specific technologies required. Return ONLY valid JSON array, nothing else.`;
+GENERAL RULES:
+- Each job must have a UNIQUE direct application URL — no duplicates
+- No more than 1 job per company — spread results across different employers
+- Prioritise well-known tech companies, unicorn startups, SaaS companies, cloud-native firms
+- Return exactly ${count} jobs if available
+
+Return ONLY a JSON array (no markdown, no preamble, no explanation) of up to ${count} jobs:
+[{"company":"Name","title":"Exact Title","country":"United States","salary":"$120k-$150k" or null,"applyUrl":"https://...","postedDate":"YYYY-MM-DD or relative","resumeKeywords":["kw1","kw2","kw3","kw4","kw5"],"techSkills":["s1","s2","s3","s4","s5"]}]
+
+"country" must be one of: ${countries.join(', ')}. Return ONLY valid JSON array, nothing else.`;
 
   try {
     const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
@@ -53,8 +74,8 @@ Return ONLY a JSON array (no markdown, no preamble, no explanation) of 15-20 job
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: 4000,
-        tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 5 }],
+        max_tokens: 6000,
+        tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 12 }],
         messages: [{ role: 'user', content: prompt }],
       }),
     });
