@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CloudOps Job Radar</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#07090d;--surface:#0c1018;--card:#101620;--border:#1c2a3a;
+    --accent:#00e5ff;--accent2:#7b61ff;--green:#00e096;--amber:#ffb020;
+    --red:#ff4d4d;--text:#dce8f0;--muted:#4a6070;
+    --font:'IBM Plex Mono',monospace;--display:'Syne',sans-serif;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13px;line-height:1.6;min-height:100vh;}
+  body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.06) 2px,rgba(0,0,0,0.06) 4px);pointer-events:none;z-index:9999;}
+  body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,0.025) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0;}
+  .wrap{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:32px 28px 60px;}
+  header{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:36px;padding-bottom:20px;border-bottom:1px solid var(--border);}
+  .logo h1{font-family:var(--display);font-size:clamp(1.6rem,3vw,2.4rem);font-weight:800;letter-spacing:-0.03em;color:var(--accent);text-shadow:0 0 40px rgba(0,229,255,0.25);}
+  .logo p{font-size:10px;color:var(--muted);letter-spacing:0.18em;text-transform:uppercase;margin-top:3px;}
+  .hud{display:flex;align-items:center;gap:8px;font-size:10px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;}
+  .hud-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:blink 2s infinite;}
+  @keyframes blink{0%,100%{opacity:1;}50%{opacity:0.3;}}
+  .section-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.18em;margin-bottom:8px;}
+  .chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:20px;}
+  .chip{display:flex;align-items:center;gap:6px;padding:5px 14px;border:1px solid var(--border);border-radius:2px;font-family:var(--font);font-size:11px;color:var(--muted);background:var(--card);cursor:pointer;transition:all .15s;user-select:none;letter-spacing:0.04em;}
+  .chip::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--muted);transition:background .15s,box-shadow .15s;flex-shrink:0;}
+  .chip.on{border-color:var(--accent);color:var(--accent);background:rgba(0,229,255,0.05);}
+  .chip.on::before{background:var(--accent);box-shadow:0 0 6px var(--accent);}
+  /* Country chips — amber accent */
+  .chip.country.on{border-color:var(--amber);color:var(--amber);background:rgba(255,176,32,0.05);}
+  .chip.country.on::before{background:var(--amber);box-shadow:0 0 6px var(--amber);}
+  /* Canada chip — distinct green */
+  .chip.canada.on{border-color:var(--green);color:var(--green);background:rgba(0,224,150,0.05);}
+  .chip.canada.on::before{background:var(--green);box-shadow:0 0 6px var(--green);}
+  .divider{height:1px;background:var(--border);margin:6px 0 18px;}
+  .controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:20px;}
+  .ctrl label{display:block;font-size:9px;color:var(--muted);letter-spacing:0.16em;text-transform:uppercase;margin-bottom:5px;}
+  select,input[type="text"]{width:100%;background:var(--card);border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:12px;padding:9px 12px;border-radius:2px;outline:none;appearance:none;-webkit-appearance:none;transition:border-color .15s;}
+  select:focus,input:focus{border-color:var(--accent);}
+  input::placeholder{color:var(--muted);}
+  .scan-btn{width:100%;padding:14px 20px;background:transparent;border:1px solid var(--accent);color:var(--accent);font-family:var(--display);font-size:13px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;border-radius:2px;margin-bottom:28px;display:flex;align-items:center;justify-content:center;gap:10px;transition:background .2s,box-shadow .2s,color .2s;position:relative;overflow:hidden;}
+  .scan-btn::before{content:'';position:absolute;inset:0;background:var(--accent);transform:scaleX(0);transform-origin:left;transition:transform .2s;z-index:-1;}
+  .scan-btn:hover{color:#000;box-shadow:0 0 20px rgba(0,229,255,0.3);}
+  .scan-btn:hover::before{transform:scaleX(1);}
+  .scan-btn:disabled{opacity:.4;cursor:not-allowed;}
+  .scan-btn:disabled::before{transform:scaleX(0);}
+  .scan-btn:disabled{color:var(--accent);}
+  .loader{display:none;text-align:center;padding:50px 20px;}
+  .loader.on{display:block;}
+  .loader-ring{display:inline-block;width:36px;height:36px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin-bottom:14px;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .loader-label{font-size:10px;color:var(--muted);letter-spacing:0.14em;text-transform:uppercase;}
+  .loader-step{color:var(--accent);font-size:11px;margin-top:8px;}
+  .err{display:none;background:rgba(255,77,77,0.07);border:1px solid rgba(255,77,77,0.3);color:var(--red);padding:12px 16px;border-radius:2px;font-size:12px;margin-bottom:20px;}
+  .err.on{display:block;}
+  .stats{display:none;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:10px;margin-bottom:24px;}
+  .stats.on{display:grid;}
+  .stat{background:var(--card);border:1px solid var(--border);border-radius:2px;padding:14px 12px;text-align:center;}
+  .stat-val{font-family:var(--display);font-size:22px;font-weight:800;color:var(--accent);}
+  .stat-lbl{font-size:9px;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;margin-top:2px;}
+  .tbl-wrap{display:none;overflow-x:auto;border:1px solid var(--border);border-radius:2px;}
+  .tbl-wrap.on{display:block;}
+  table{width:100%;border-collapse:collapse;font-size:11.5px;}
+  thead{background:var(--surface);border-bottom:1px solid var(--border);}
+  th{padding:11px 14px;text-align:left;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.14em;font-weight:500;white-space:nowrap;}
+  tbody tr{border-bottom:1px solid var(--border);}
+  tbody tr:last-child{border-bottom:none;}
+  tbody tr:hover td{background:rgba(0,229,255,0.02);}
+  td{padding:12px 14px;vertical-align:top;color:var(--text);}
+  .co{font-family:var(--display);font-weight:700;font-size:12px;color:var(--text);}
+  .ttl{color:var(--accent);font-size:12px;}
+  .sal-val{color:var(--green);white-space:nowrap;}
+  .sal-none{color:var(--muted);font-style:italic;}
+  .cbadge{display:inline-block;padding:2px 8px;font-size:9px;border-radius:2px;letter-spacing:0.06em;white-space:nowrap;}
+  .cbadge.us{background:rgba(0,229,255,0.08);color:var(--accent);border:1px solid rgba(0,229,255,0.2);}
+  .cbadge.ca{background:rgba(0,224,150,0.08);color:var(--green);border:1px solid rgba(0,224,150,0.2);}
+  .cbadge.eu{background:rgba(255,176,32,0.08);color:var(--amber);border:1px solid rgba(255,176,32,0.2);}
+  .dbadge{display:inline-block;padding:2px 8px;font-size:9px;border-radius:2px;}
+  .dbadge.fresh{background:rgba(0,224,150,0.1);color:var(--green);border:1px solid rgba(0,224,150,0.25);}
+  .dbadge.recent{background:rgba(255,176,32,0.08);color:var(--amber);border:1px solid rgba(255,176,32,0.2);}
+  .tags{display:flex;flex-wrap:wrap;gap:4px;min-width:150px;}
+  .tag{padding:2px 7px;font-size:9px;border-radius:2px;background:rgba(255,255,255,0.03);border:1px solid var(--border);color:var(--muted);white-space:nowrap;}
+  .tag.sk{background:rgba(123,97,255,0.08);border-color:rgba(123,97,255,0.3);color:#a48fff;}
+  .apply-lnk{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border:1px solid rgba(0,229,255,0.25);background:rgba(0,229,255,0.05);color:var(--accent);font-family:var(--font);font-size:10px;text-decoration:none;border-radius:2px;white-space:nowrap;transition:background .15s;}
+  .apply-lnk:hover{background:rgba(0,229,255,0.12);}
+  .empty{display:none;text-align:center;padding:50px;color:var(--muted);}
+  .empty.on{display:block;}
+  footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:10px;color:var(--muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+  @keyframes rowIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+  .row-in{animation:rowIn .25s ease both;}
+  @media(max-width:768px){th:nth-child(8),td:nth-child(8),th:nth-child(9),td:nth-child(9){display:none;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="logo">
+      <h1>☁ CloudOps Job Radar</h1>
+      <p>Remote · Cloud · DevOps · Platform · SRE · Solutions Architect · AWS</p>
+    </div>
+    <div class="hud">
+      <div class="hud-dot"></div>
+      <span id="lastRun">Online — ready to scan</span>
+    </div>
+  </header>
+
+  <!-- ROLE TYPES -->
+  <div class="section-label">Role types</div>
+  <div class="chips" id="roleChips">
+    <span class="chip on" data-role="Cloud Engineer">Cloud Engineer</span>
+    <span class="chip on" data-role="DevOps Engineer">DevOps Engineer</span>
+    <span class="chip on" data-role="Platform Engineer">Platform Engineer</span>
+    <span class="chip on" data-role="Site Reliability Engineer">SRE</span>
+    <span class="chip on" data-role="Solutions Architect">Solutions Architect</span>
+    <span class="chip on" data-role="AWS Engineer">AWS-Focused</span>
+  </div>
+
+  <!-- EXPERIENCE LEVEL -->
+  <div class="section-label">Experience level</div>
+  <div class="chips" id="levelChips">
+    <span class="chip on" data-level="entry">Entry Level</span>
+    <span class="chip on" data-level="junior">Junior</span>
+    <span class="chip on" data-level="mid">Mid Level</span>
+    <span class="chip on" data-level="senior">Senior</span>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- COUNTRIES -->
+  <div class="section-label">Countries</div>
+  <div class="chips" id="countryChips">
+    <span class="chip country on" data-country="United States">🇺🇸 United States</span>
+    <span class="chip canada on"  data-country="Canada">🇨🇦 Canada</span>
+    <span class="chip country on" data-country="United Kingdom">🇬🇧 United Kingdom</span>
+    <span class="chip country"    data-country="Germany">🇩🇪 Germany</span>
+    <span class="chip country"    data-country="Netherlands">🇳🇱 Netherlands</span>
+    <span class="chip country"    data-country="France">🇫🇷 France</span>
+    <span class="chip country"    data-country="Ireland">🇮🇪 Ireland</span>
+    <span class="chip country"    data-country="Spain">🇪🇸 Spain</span>
+    <span class="chip country"    data-country="Poland">🇵🇱 Poland</span>
+    <span class="chip country"    data-country="Portugal">🇵🇹 Portugal</span>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- FILTERS -->
+  <div class="controls">
+    <div class="ctrl">
+      <label>Posted within</label>
+      <select id="days">
+        <option value="1">Last 24 hours</option>
+        <option value="3">Last 3 days</option>
+        <option value="7" selected>Last 7 days</option>
+        <option value="14">Last 14 days</option>
+        <option value="30">Last 30 days</option>
+      </select>
+    </div>
+    <div class="ctrl">
+      <label>Min salary (USD / equiv)</label>
+      <input type="text" id="minSal" placeholder="e.g. 80000">
+    </div>
+    <div class="ctrl">
+      <label>Extra keywords</label>
+      <input type="text" id="extraKw" placeholder="e.g. Terraform, fintech">
+    </div>
+  </div>
+
+  <button class="scan-btn" id="scanBtn" onclick="doScan()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <span id="btnTxt">Scan for jobs now</span>
+  </button>
+
+  <div class="err" id="errBox"></div>
+
+  <div class="loader" id="loader">
+    <div class="loader-ring"></div>
+    <div class="loader-label">Scanning job boards</div>
+    <div class="loader-step" id="stepTxt">Connecting...</div>
+  </div>
+
+  <div class="stats" id="statsRow">
+    <div class="stat"><div class="stat-val" id="stTotal">0</div><div class="stat-lbl">Jobs found</div></div>
+    <div class="stat"><div class="stat-val" id="stFresh">0</div><div class="stat-lbl">≤ 3 days old</div></div>
+    <div class="stat"><div class="stat-val" id="stSal">0</div><div class="stat-lbl">With salary</div></div>
+    <div class="stat"><div class="stat-val" id="stUS">0</div><div class="stat-lbl">US</div></div>
+    <div class="stat"><div class="stat-val" id="stCA">0</div><div class="stat-lbl">Canada</div></div>
+    <div class="stat"><div class="stat-val" id="stEU">0</div><div class="stat-lbl">Europe</div></div>
+  </div>
+
+  <div class="empty" id="emptyBox">No results matched your filters. Try widening the search.</div>
+
+  <div class="tbl-wrap" id="tblWrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Company</th>
+          <th>Role</th>
+          <th>Country</th>
+          <th>Salary</th>
+          <th>Posted</th>
+          <th>Apply</th>
+          <th>Resume Keywords</th>
+          <th>Tech Skills</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+
+  <footer>
+    <span>CloudOps Job Radar — Powered by Claude AI + Live Web Search</span>
+    <span id="footTime"></span>
+  </footer>
+
+</div>
+<script>
+// Toggle chips
+document.querySelectorAll('.chip').forEach(c => c.onclick = () => c.classList.toggle('on'));
+
+const US_COUNTRIES  = ['United States'];
+const CA_COUNTRIES  = ['Canada'];
+const EU_COUNTRIES  = ['United Kingdom','Germany','Netherlands','France','Ireland','Spain','Poland','Portugal'];
+
+function getRoles()     { return [...document.querySelectorAll('#roleChips .chip.on')].map(c => c.dataset.role); }
+function getLevels()    { return [...document.querySelectorAll('#levelChips .chip.on')].map(c => c.dataset.level); }
+function getCountries() { return [...document.querySelectorAll('#countryChips .chip.on')].map(c => c.dataset.country); }
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function isFresh(d) {
+  if (!d) return false;
+  const l = d.toLowerCase();
+  if (/today|just posted|(\b[123]\b.*day)|hours? ago/.test(l)) return true;
+  try { return (Date.now() - new Date(d)) / 864e5 <= 3; } catch { return false; }
+}
+
+function countryBadge(country) {
+  if (US_COUNTRIES.includes(country)) return `<span class="cbadge us">${esc(country)}</span>`;
+  if (CA_COUNTRIES.includes(country)) return `<span class="cbadge ca">${esc(country)}</span>`;
+  return `<span class="cbadge eu">${esc(country)}</span>`;
+}
+
+let stepTimer;
+function startSteps() {
+  const s = ['Searching job boards...','Scanning LinkedIn & Greenhouse...','Checking career pages...','Filtering by level & recency...','Extracting salary & skills...','Building your results...'];
+  let i = 0;
+  document.getElementById('stepTxt').textContent = s[0];
+  stepTimer = setInterval(() => { i = (i+1)%s.length; document.getElementById('stepTxt').textContent = s[i]; }, 1800);
+}
+
+async function doScan() {
+  const roles     = getRoles();
+  const levels    = getLevels();
+  const countries = getCountries();
+
+  if (!roles.length)     { showErr('Select at least one role type.'); return; }
+  if (!levels.length)    { showErr('Select at least one experience level.'); return; }
+  if (!countries.length) { showErr('Select at least one country.'); return; }
+
+  const days    = document.getElementById('days').value;
+  const minSal  = document.getElementById('minSal').value.trim();
+  const extraKw = document.getElementById('extraKw').value.trim();
+
+  setLoading(true); hideAll(); startSteps();
+
+  try {
+    const res = await fetch('/api/search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        roles:         roles.flatMap(r => levels.map(l => `${l} ${r}`)),
+        countries,
+        days,
+        minSalary:     minSal,
+        extraKeywords: extraKw,
+      }),
+    });
+    const data = await res.json();
+    if (data.error) { showErr(data.error); return; }
+    render(data.jobs || []);
+  } catch(e) {
+    showErr('Request failed: ' + e.message);
+  } finally {
+    clearInterval(stepTimer);
+    setLoading(false);
+  }
+}
+
+function render(jobs) {
+  if (!jobs.length) { document.getElementById('emptyBox').classList.add('on'); return; }
+
+  document.getElementById('stTotal').textContent = jobs.length;
+  document.getElementById('stFresh').textContent = jobs.filter(j => isFresh(j.postedDate)).length;
+  document.getElementById('stSal').textContent   = jobs.filter(j => j.salary).length;
+  document.getElementById('stUS').textContent    = jobs.filter(j => US_COUNTRIES.includes(j.country)).length;
+  document.getElementById('stCA').textContent    = jobs.filter(j => CA_COUNTRIES.includes(j.country)).length;
+  document.getElementById('stEU').textContent    = jobs.filter(j => EU_COUNTRIES.includes(j.country)).length;
+  document.getElementById('statsRow').classList.add('on');
+
+  const tbody = document.getElementById('tbody');
+  tbody.innerHTML = '';
+
+  jobs.forEach((j, i) => {
+    const kw    = (j.resumeKeywords||[]).slice(0,5).map(k=>`<span class="tag">${esc(k)}</span>`).join('');
+    const sk    = (j.techSkills||[]).slice(0,5).map(s=>`<span class="tag sk">${esc(s)}</span>`).join('');
+    const sal   = j.salary ? `<span class="sal-val">${esc(j.salary)}</span>` : `<span class="sal-none">—</span>`;
+    const dc    = isFresh(j.postedDate) ? 'fresh' : 'recent';
+    const apply = (j.applyUrl && j.applyUrl.startsWith('http'))
+      ? `<a class="apply-lnk" href="${esc(j.applyUrl)}" target="_blank" rel="noopener">Apply ↗</a>`
+      : `<span class="sal-none">—</span>`;
+    const tr = document.createElement('tr');
+    tr.className = 'row-in';
+    tr.style.animationDelay = `${i * 0.03}s`;
+    tr.innerHTML = `
+      <td style="color:var(--muted)">${i+1}</td>
+      <td><span class="co">${esc(j.company)}</span></td>
+      <td><span class="ttl">${esc(j.title)}</span></td>
+      <td>${countryBadge(j.country)}</td>
+      <td>${sal}</td>
+      <td><span class="dbadge ${dc}">${esc(j.postedDate||'Recent')}</span></td>
+      <td>${apply}</td>
+      <td><div class="tags">${kw}</div></td>
+      <td><div class="tags">${sk}</div></td>`;
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('tblWrap').classList.add('on');
+  document.getElementById('lastRun').textContent = 'Last scan: ' + new Date().toLocaleTimeString();
+  document.getElementById('footTime').textContent = 'Scanned: ' + new Date().toLocaleString();
+}
+
+function setLoading(on) {
+  document.getElementById('scanBtn').disabled = on;
+  document.getElementById('btnTxt').textContent = on ? 'Scanning...' : 'Scan for jobs now';
+  document.getElementById('loader').classList.toggle('on', on);
+}
+
+function hideAll() {
+  ['errBox','statsRow','tblWrap','emptyBox'].forEach(id => document.getElementById(id).classList.remove('on'));
+}
+
+function showErr(msg) {
+  const el = document.getElementById('errBox');
+  el.textContent = '⚠ ' + msg;
+  el.classList.add('on');
+}
+</script>
+</body>
+</html>
