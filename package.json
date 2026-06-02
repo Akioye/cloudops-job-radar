@@ -1,0 +1,14 @@
+{
+  "name": "cloudops-job-radar",
+  "version": "1.0.0",
+  "description": "Remote CloudOps job search dashboard powered by Claude AI",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "dev": "vercel dev"
+  },
+  "devDependencies": {
+    "vercel": "^34.0.0"
+  }
+}
