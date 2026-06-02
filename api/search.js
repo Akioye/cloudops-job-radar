@@ -122,12 +122,32 @@ Return ONLY a raw JSON array, no markdown, no explanation, no preamble:
     if (data.error) return res.status(500).json({ error: data.error.message });
 
     const text = (data.content || []).map(b => b.type === 'text' ? b.text : '').filter(Boolean).join('\n');
-    const start = text.indexOf('[');
-    const end   = text.lastIndexOf(']');
-    if (start === -1 || end === -1) return res.status(500).json({ error: 'No job data returned. Try again.' });
+
+    // Robust JSON extraction — walk character by character to find outermost array
+    let jobs = null;
+    let depth = 0, inStr = false, escape = false, arrStart = -1;
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i];
+      if (escape) { escape = false; continue; }
+      if (ch === '\\' && inStr) { escape = true; continue; }
+      if (ch === '"') { inStr = !inStr; continue; }
+      if (inStr) continue;
+      if (ch === '[') { if (depth === 0) arrStart = i; depth++; }
+      else if (ch === ']') {
+        depth--;
+        if (depth === 0 && arrStart !== -1) {
+          try {
+            const candidate = text.slice(arrStart, i + 1);
+            const parsed = JSON.parse(candidate);
+            if (Array.isArray(parsed) && parsed.length > 0) { jobs = parsed; break; }
+          } catch { arrStart = -1; }
+        }
+      }
+    }
+
+    if (!jobs || !jobs.length) return res.status(500).json({ error: 'No job data returned. Try again.' });
 
     // Post-process: if company mode, strip any jobs where the URL domain doesn't look like a company site
-    let jobs = JSON.parse(text.slice(start, end + 1));
 
     if (sourceMode === 'company') {
       const blacklist = ['lever.co','greenhouse.io','ashby.com','workday.com','dover.com',
