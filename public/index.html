@@ -17,50 +17,90 @@
   body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.06) 2px,rgba(0,0,0,0.06) 4px);pointer-events:none;z-index:9999;}
   body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,0.025) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0;}
   .wrap{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:32px 28px 60px;}
-  header{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:36px;padding-bottom:20px;border-bottom:1px solid var(--border);}
+
+  /* HEADER */
+  header{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid var(--border);}
   .logo h1{font-family:var(--display);font-size:clamp(1.6rem,3vw,2.4rem);font-weight:800;letter-spacing:-0.03em;color:var(--accent);text-shadow:0 0 40px rgba(0,229,255,0.25);}
   .logo p{font-size:10px;color:var(--muted);letter-spacing:0.18em;text-transform:uppercase;margin-top:3px;}
   .hud{display:flex;align-items:center;gap:8px;font-size:10px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;}
   .hud-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:blink 2s infinite;}
   @keyframes blink{0%,100%{opacity:1;}50%{opacity:0.3;}}
+
+  /* TOP CONTROLS BAR */
+  .top-bar{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:4px;}
+  .top-bar-title{grid-column:1/-1;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.18em;margin-bottom:4px;}
+
+  /* Source mode selector */
+  .source-options{display:flex;flex-wrap:wrap;gap:8px;}
+  .src-btn{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 16px;border:1px solid var(--border);border-radius:3px;background:var(--card);cursor:pointer;transition:all .15s;user-select:none;min-width:100px;flex:1;}
+  .src-btn .src-icon{font-size:18px;}
+  .src-btn .src-label{font-size:10px;color:var(--muted);letter-spacing:0.06em;text-align:center;}
+  .src-btn .src-desc{font-size:9px;color:var(--muted);opacity:0.6;text-align:center;}
+  .src-btn.active{border-color:var(--accent);background:rgba(0,229,255,0.06);}
+  .src-btn.active .src-label{color:var(--accent);}
+  .src-btn.active.linkedin{border-color:#0a66c2;background:rgba(10,102,194,0.08);}
+  .src-btn.active.linkedin .src-label{color:#4d9de0;}
+  .src-btn.active.indeed{border-color:#2164f3;background:rgba(33,100,243,0.08);}
+  .src-btn.active.indeed .src-label{color:#6b9fff;}
+
+  /* Result count selector */
+  .count-options{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+  .cnt-btn{padding:8px 18px;border:1px solid var(--border);border-radius:3px;background:var(--card);font-family:var(--font);font-size:12px;color:var(--muted);cursor:pointer;transition:all .15s;user-select:none;}
+  .cnt-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(0,229,255,0.06);}
+  .cnt-btn.active.warn{border-color:var(--amber);color:var(--amber);background:rgba(255,176,32,0.06);}
+  .cnt-note{font-size:9px;color:var(--muted);margin-top:4px;}
+
+  /* SECTION LABEL */
   .section-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.18em;margin-bottom:8px;}
+
+  /* CHIPS */
   .chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:20px;}
   .chip{display:flex;align-items:center;gap:6px;padding:5px 14px;border:1px solid var(--border);border-radius:2px;font-family:var(--font);font-size:11px;color:var(--muted);background:var(--card);cursor:pointer;transition:all .15s;user-select:none;letter-spacing:0.04em;}
   .chip::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--muted);transition:background .15s,box-shadow .15s;flex-shrink:0;}
   .chip.on{border-color:var(--accent);color:var(--accent);background:rgba(0,229,255,0.05);}
   .chip.on::before{background:var(--accent);box-shadow:0 0 6px var(--accent);}
-  /* Country chips — amber accent */
   .chip.country.on{border-color:var(--amber);color:var(--amber);background:rgba(255,176,32,0.05);}
   .chip.country.on::before{background:var(--amber);box-shadow:0 0 6px var(--amber);}
-  /* Canada chip — distinct green */
   .chip.canada.on{border-color:var(--green);color:var(--green);background:rgba(0,224,150,0.05);}
   .chip.canada.on::before{background:var(--green);box-shadow:0 0 6px var(--green);}
+
   .divider{height:1px;background:var(--border);margin:6px 0 18px;}
+
+  /* FILTER CONTROLS */
   .controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:20px;}
   .ctrl label{display:block;font-size:9px;color:var(--muted);letter-spacing:0.16em;text-transform:uppercase;margin-bottom:5px;}
   select,input[type="text"]{width:100%;background:var(--card);border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:12px;padding:9px 12px;border-radius:2px;outline:none;appearance:none;-webkit-appearance:none;transition:border-color .15s;}
   select:focus,input:focus{border-color:var(--accent);}
   input::placeholder{color:var(--muted);}
+
+  /* SCAN BUTTON */
   .scan-btn{width:100%;padding:14px 20px;background:transparent;border:1px solid var(--accent);color:var(--accent);font-family:var(--display);font-size:13px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;border-radius:2px;margin-bottom:28px;display:flex;align-items:center;justify-content:center;gap:10px;transition:background .2s,box-shadow .2s,color .2s;position:relative;overflow:hidden;}
   .scan-btn::before{content:'';position:absolute;inset:0;background:var(--accent);transform:scaleX(0);transform-origin:left;transition:transform .2s;z-index:-1;}
   .scan-btn:hover{color:#000;box-shadow:0 0 20px rgba(0,229,255,0.3);}
   .scan-btn:hover::before{transform:scaleX(1);}
-  .scan-btn:disabled{opacity:.4;cursor:not-allowed;}
+  .scan-btn:disabled{opacity:.4;cursor:not-allowed;color:var(--accent);}
   .scan-btn:disabled::before{transform:scaleX(0);}
-  .scan-btn:disabled{color:var(--accent);}
+
+  /* LOADER */
   .loader{display:none;text-align:center;padding:50px 20px;}
   .loader.on{display:block;}
   .loader-ring{display:inline-block;width:36px;height:36px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin-bottom:14px;}
   @keyframes spin{to{transform:rotate(360deg);}}
   .loader-label{font-size:10px;color:var(--muted);letter-spacing:0.14em;text-transform:uppercase;}
   .loader-step{color:var(--accent);font-size:11px;margin-top:8px;}
+
+  /* ERROR */
   .err{display:none;background:rgba(255,77,77,0.07);border:1px solid rgba(255,77,77,0.3);color:var(--red);padding:12px 16px;border-radius:2px;font-size:12px;margin-bottom:20px;}
   .err.on{display:block;}
+
+  /* STATS */
   .stats{display:none;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:10px;margin-bottom:24px;}
   .stats.on{display:grid;}
   .stat{background:var(--card);border:1px solid var(--border);border-radius:2px;padding:14px 12px;text-align:center;}
   .stat-val{font-family:var(--display);font-size:22px;font-weight:800;color:var(--accent);}
   .stat-lbl{font-size:9px;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;margin-top:2px;}
+
+  /* TABLE */
   .tbl-wrap{display:none;overflow-x:auto;border:1px solid var(--border);border-radius:2px;}
   .tbl-wrap.on{display:block;}
   table{width:100%;border-collapse:collapse;font-size:11.5px;}
@@ -70,7 +110,7 @@
   tbody tr:last-child{border-bottom:none;}
   tbody tr:hover td{background:rgba(0,229,255,0.02);}
   td{padding:12px 14px;vertical-align:top;color:var(--text);}
-  .co{font-family:var(--display);font-weight:700;font-size:12px;color:var(--text);}
+  .co{font-family:var(--display);font-weight:700;font-size:12px;}
   .ttl{color:var(--accent);font-size:12px;}
   .sal-val{color:var(--green);white-space:nowrap;}
   .sal-none{color:var(--muted);font-style:italic;}
@@ -81,17 +121,23 @@
   .dbadge{display:inline-block;padding:2px 8px;font-size:9px;border-radius:2px;}
   .dbadge.fresh{background:rgba(0,224,150,0.1);color:var(--green);border:1px solid rgba(0,224,150,0.25);}
   .dbadge.recent{background:rgba(255,176,32,0.08);color:var(--amber);border:1px solid rgba(255,176,32,0.2);}
+  .src-tag{display:inline-block;padding:2px 7px;font-size:9px;border-radius:2px;margin-top:3px;}
+  .src-tag.company{background:rgba(0,224,150,0.08);color:var(--green);border:1px solid rgba(0,224,150,0.2);}
+  .src-tag.linkedin{background:rgba(10,102,194,0.12);color:#4d9de0;border:1px solid rgba(10,102,194,0.3);}
+  .src-tag.indeed{background:rgba(33,100,243,0.1);color:#6b9fff;border:1px solid rgba(33,100,243,0.25);}
+  .src-tag.other{background:rgba(255,255,255,0.04);color:var(--muted);border:1px solid var(--border);}
   .tags{display:flex;flex-wrap:wrap;gap:4px;min-width:150px;}
   .tag{padding:2px 7px;font-size:9px;border-radius:2px;background:rgba(255,255,255,0.03);border:1px solid var(--border);color:var(--muted);white-space:nowrap;}
   .tag.sk{background:rgba(123,97,255,0.08);border-color:rgba(123,97,255,0.3);color:#a48fff;}
   .apply-lnk{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border:1px solid rgba(0,229,255,0.25);background:rgba(0,229,255,0.05);color:var(--accent);font-family:var(--font);font-size:10px;text-decoration:none;border-radius:2px;white-space:nowrap;transition:background .15s;}
   .apply-lnk:hover{background:rgba(0,229,255,0.12);}
+
   .empty{display:none;text-align:center;padding:50px;color:var(--muted);}
   .empty.on{display:block;}
   footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:10px;color:var(--muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
   @keyframes rowIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
   .row-in{animation:rowIn .25s ease both;}
-  @media(max-width:768px){th:nth-child(8),td:nth-child(8),th:nth-child(9),td:nth-child(9){display:none;}}
+  @media(max-width:900px){.top-bar{grid-template-columns:1fr;} th:nth-child(8),td:nth-child(8),th:nth-child(9),td:nth-child(9){display:none;}}
 </style>
 </head>
 <body>
@@ -107,6 +153,44 @@
       <span id="lastRun">Online — ready to scan</span>
     </div>
   </header>
+
+  <!-- ── TOP BAR: SOURCE + COUNT ── -->
+  <div class="top-bar">
+    <div>
+      <div class="top-bar-title">Job source</div>
+      <div class="source-options" id="sourceOptions">
+        <div class="src-btn active" data-src="company" onclick="setSource(this)">
+          <span class="src-icon">🏢</span>
+          <span class="src-label">Company Sites</span>
+          <span class="src-desc">Best quality</span>
+        </div>
+        <div class="src-btn linkedin" data-src="linkedin" onclick="setSource(this)">
+          <span class="src-icon">💼</span>
+          <span class="src-label">LinkedIn Only</span>
+          <span class="src-desc">Large volume</span>
+        </div>
+        <div class="src-btn indeed" data-src="indeed" onclick="setSource(this)">
+          <span class="src-icon">🔵</span>
+          <span class="src-label">Indeed Only</span>
+          <span class="src-desc">High volume</span>
+        </div>
+        <div class="src-btn" data-src="all" onclick="setSource(this)">
+          <span class="src-icon">🌐</span>
+          <span class="src-label">All Sources</span>
+          <span class="src-desc">Everything</span>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="top-bar-title">Results to fetch</div>
+      <div class="count-options" id="countOptions">
+        <div class="cnt-btn active" data-count="20" onclick="setCount(this)">20</div>
+        <div class="cnt-btn warn" data-count="30" onclick="setCount(this)">30</div>
+        <div class="cnt-btn warn" data-count="40" onclick="setCount(this)">40</div>
+      </div>
+      <div class="cnt-note">30–40 may take up to 60s to scan</div>
+    </div>
+  </div>
 
   <!-- ROLE TYPES -->
   <div class="section-label">Role types</div>
@@ -133,16 +217,16 @@
   <!-- COUNTRIES -->
   <div class="section-label">Countries</div>
   <div class="chips" id="countryChips">
-    <span class="chip country on" data-country="United States">🇺🇸 United States</span>
-    <span class="chip canada on"  data-country="Canada">🇨🇦 Canada</span>
-    <span class="chip country on" data-country="United Kingdom">🇬🇧 United Kingdom</span>
-    <span class="chip country"    data-country="Germany">🇩🇪 Germany</span>
-    <span class="chip country"    data-country="Netherlands">🇳🇱 Netherlands</span>
-    <span class="chip country"    data-country="France">🇫🇷 France</span>
-    <span class="chip country"    data-country="Ireland">🇮🇪 Ireland</span>
-    <span class="chip country"    data-country="Spain">🇪🇸 Spain</span>
-    <span class="chip country"    data-country="Poland">🇵🇱 Poland</span>
-    <span class="chip country"    data-country="Portugal">🇵🇹 Portugal</span>
+    <span class="chip country on"  data-country="United States">🇺🇸 United States</span>
+    <span class="chip canada on"   data-country="Canada">🇨🇦 Canada</span>
+    <span class="chip country on"  data-country="United Kingdom">🇬🇧 United Kingdom</span>
+    <span class="chip country"     data-country="Germany">🇩🇪 Germany</span>
+    <span class="chip country"     data-country="Netherlands">🇳🇱 Netherlands</span>
+    <span class="chip country"     data-country="France">🇫🇷 France</span>
+    <span class="chip country"     data-country="Ireland">🇮🇪 Ireland</span>
+    <span class="chip country"     data-country="Spain">🇪🇸 Spain</span>
+    <span class="chip country"     data-country="Poland">🇵🇱 Poland</span>
+    <span class="chip country"     data-country="Portugal">🇵🇹 Portugal</span>
   </div>
 
   <div class="divider"></div>
@@ -203,6 +287,7 @@
           <th>Country</th>
           <th>Salary</th>
           <th>Posted</th>
+          <th>Source</th>
           <th>Apply</th>
           <th>Resume Keywords</th>
           <th>Tech Skills</th>
@@ -219,136 +304,174 @@
 
 </div>
 <script>
-// Toggle chips
-document.querySelectorAll('.chip').forEach(c => c.onclick = () => c.classList.toggle('on'));
+  const US_C = ['United States'];
+  const CA_C = ['Canada'];
+  const EU_C = ['United Kingdom','Germany','Netherlands','France','Ireland','Spain','Poland','Portugal'];
 
-const US_COUNTRIES  = ['United States'];
-const CA_COUNTRIES  = ['Canada'];
-const EU_COUNTRIES  = ['United Kingdom','Germany','Netherlands','France','Ireland','Spain','Poland','Portugal'];
-
-function getRoles()     { return [...document.querySelectorAll('#roleChips .chip.on')].map(c => c.dataset.role); }
-function getLevels()    { return [...document.querySelectorAll('#levelChips .chip.on')].map(c => c.dataset.level); }
-function getCountries() { return [...document.querySelectorAll('#countryChips .chip.on')].map(c => c.dataset.country); }
-
-function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
-function isFresh(d) {
-  if (!d) return false;
-  const l = d.toLowerCase();
-  if (/today|just posted|(\b[123]\b.*day)|hours? ago/.test(l)) return true;
-  try { return (Date.now() - new Date(d)) / 864e5 <= 3; } catch { return false; }
-}
-
-function countryBadge(country) {
-  if (US_COUNTRIES.includes(country)) return `<span class="cbadge us">${esc(country)}</span>`;
-  if (CA_COUNTRIES.includes(country)) return `<span class="cbadge ca">${esc(country)}</span>`;
-  return `<span class="cbadge eu">${esc(country)}</span>`;
-}
-
-let stepTimer;
-function startSteps() {
-  const s = ['Searching job boards...','Scanning LinkedIn & Greenhouse...','Checking career pages...','Filtering by level & recency...','Extracting salary & skills...','Building your results...'];
-  let i = 0;
-  document.getElementById('stepTxt').textContent = s[0];
-  stepTimer = setInterval(() => { i = (i+1)%s.length; document.getElementById('stepTxt').textContent = s[i]; }, 1800);
-}
-
-async function doScan() {
-  const roles     = getRoles();
-  const levels    = getLevels();
-  const countries = getCountries();
-
-  if (!roles.length)     { showErr('Select at least one role type.'); return; }
-  if (!levels.length)    { showErr('Select at least one experience level.'); return; }
-  if (!countries.length) { showErr('Select at least one country.'); return; }
-
-  const days    = document.getElementById('days').value;
-  const minSal  = document.getElementById('minSal').value.trim();
-  const extraKw = document.getElementById('extraKw').value.trim();
-
-  setLoading(true); hideAll(); startSteps();
-
-  try {
-    const res = await fetch('/api/search', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        roles:         roles.flatMap(r => levels.map(l => `${l} ${r}`)),
-        countries,
-        days,
-        minSalary:     minSal,
-        extraKeywords: extraKw,
-      }),
-    });
-    const data = await res.json();
-    if (data.error) { showErr(data.error); return; }
-    render(data.jobs || []);
-  } catch(e) {
-    showErr('Request failed: ' + e.message);
-  } finally {
-    clearInterval(stepTimer);
-    setLoading(false);
+  // Source selector
+  function setSource(el) {
+    document.querySelectorAll('.src-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
   }
-}
 
-function render(jobs) {
-  if (!jobs.length) { document.getElementById('emptyBox').classList.add('on'); return; }
+  // Count selector
+  function setCount(el) {
+    document.querySelectorAll('.cnt-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+  }
 
-  document.getElementById('stTotal').textContent = jobs.length;
-  document.getElementById('stFresh').textContent = jobs.filter(j => isFresh(j.postedDate)).length;
-  document.getElementById('stSal').textContent   = jobs.filter(j => j.salary).length;
-  document.getElementById('stUS').textContent    = jobs.filter(j => US_COUNTRIES.includes(j.country)).length;
-  document.getElementById('stCA').textContent    = jobs.filter(j => CA_COUNTRIES.includes(j.country)).length;
-  document.getElementById('stEU').textContent    = jobs.filter(j => EU_COUNTRIES.includes(j.country)).length;
-  document.getElementById('statsRow').classList.add('on');
+  function getSource() { return document.querySelector('.src-btn.active')?.dataset.src || 'company'; }
+  function getCount()  { return parseInt(document.querySelector('.cnt-btn.active')?.dataset.count || '20'); }
 
-  const tbody = document.getElementById('tbody');
-  tbody.innerHTML = '';
+  // Chip toggles
+  document.querySelectorAll('.chip').forEach(c => c.onclick = () => c.classList.toggle('on'));
 
-  jobs.forEach((j, i) => {
-    const kw    = (j.resumeKeywords||[]).slice(0,5).map(k=>`<span class="tag">${esc(k)}</span>`).join('');
-    const sk    = (j.techSkills||[]).slice(0,5).map(s=>`<span class="tag sk">${esc(s)}</span>`).join('');
-    const sal   = j.salary ? `<span class="sal-val">${esc(j.salary)}</span>` : `<span class="sal-none">—</span>`;
-    const dc    = isFresh(j.postedDate) ? 'fresh' : 'recent';
-    const apply = (j.applyUrl && j.applyUrl.startsWith('http'))
-      ? `<a class="apply-lnk" href="${esc(j.applyUrl)}" target="_blank" rel="noopener">Apply ↗</a>`
-      : `<span class="sal-none">—</span>`;
-    const tr = document.createElement('tr');
-    tr.className = 'row-in';
-    tr.style.animationDelay = `${i * 0.03}s`;
-    tr.innerHTML = `
-      <td style="color:var(--muted)">${i+1}</td>
-      <td><span class="co">${esc(j.company)}</span></td>
-      <td><span class="ttl">${esc(j.title)}</span></td>
-      <td>${countryBadge(j.country)}</td>
-      <td>${sal}</td>
-      <td><span class="dbadge ${dc}">${esc(j.postedDate||'Recent')}</span></td>
-      <td>${apply}</td>
-      <td><div class="tags">${kw}</div></td>
-      <td><div class="tags">${sk}</div></td>`;
-    tbody.appendChild(tr);
-  });
+  function getRoles()     { return [...document.querySelectorAll('#roleChips .chip.on')].map(c => c.dataset.role); }
+  function getLevels()    { return [...document.querySelectorAll('#levelChips .chip.on')].map(c => c.dataset.level); }
+  function getCountries() { return [...document.querySelectorAll('#countryChips .chip.on')].map(c => c.dataset.country); }
 
-  document.getElementById('tblWrap').classList.add('on');
-  document.getElementById('lastRun').textContent = 'Last scan: ' + new Date().toLocaleTimeString();
-  document.getElementById('footTime').textContent = 'Scanned: ' + new Date().toLocaleString();
-}
+  function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-function setLoading(on) {
-  document.getElementById('scanBtn').disabled = on;
-  document.getElementById('btnTxt').textContent = on ? 'Scanning...' : 'Scan for jobs now';
-  document.getElementById('loader').classList.toggle('on', on);
-}
+  function isFresh(d) {
+    if (!d) return false;
+    const l = d.toLowerCase();
+    if (/today|just posted|(\b[123]\b.*day)|hours? ago/.test(l)) return true;
+    try { return (Date.now() - new Date(d)) / 864e5 <= 3; } catch { return false; }
+  }
 
-function hideAll() {
-  ['errBox','statsRow','tblWrap','emptyBox'].forEach(id => document.getElementById(id).classList.remove('on'));
-}
+  function getSourceTag(url) {
+    if (!url) return '<span class="src-tag other">—</span>';
+    if (url.includes('greenhouse.io') || url.includes('lever.co') || url.includes('ashby.com') || url.includes('workday.com') || url.includes('dover.com')) return '<span class="src-tag company">Direct</span>';
+    if (url.includes('linkedin.com')) return '<span class="src-tag linkedin">LinkedIn</span>';
+    if (url.includes('indeed.com'))   return '<span class="src-tag indeed">Indeed</span>';
+    if (url.includes('wellfound.com') || url.includes('remotive.com') || url.includes('weworkremotely') || url.includes('himalayas')) return '<span class="src-tag company">Niche Board</span>';
+    return '<span class="src-tag company">Direct</span>';
+  }
 
-function showErr(msg) {
-  const el = document.getElementById('errBox');
-  el.textContent = '⚠ ' + msg;
-  el.classList.add('on');
-}
+  function countryBadge(country) {
+    if (US_C.includes(country)) return `<span class="cbadge us">${esc(country)}</span>`;
+    if (CA_C.includes(country)) return `<span class="cbadge ca">${esc(country)}</span>`;
+    return `<span class="cbadge eu">${esc(country)}</span>`;
+  }
+
+  let stepTimer;
+  function startSteps(count) {
+    const s = [
+      'Waking up search engine...',
+      'Scanning company career pages...',
+      'Checking Greenhouse & Lever...',
+      'Searching remote-first boards...',
+      `Gathering ${count} results...`,
+      'Filtering by level & recency...',
+      'Extracting salary & skills...',
+      'Building your table...'
+    ];
+    let i = 0;
+    document.getElementById('stepTxt').textContent = s[0];
+    stepTimer = setInterval(() => { i = (i+1)%s.length; document.getElementById('stepTxt').textContent = s[i]; }, 2000);
+  }
+
+  async function doScan() {
+    const roles     = getRoles();
+    const levels    = getLevels();
+    const countries = getCountries();
+
+    if (!roles.length)     { showErr('Select at least one role type.'); return; }
+    if (!levels.length)    { showErr('Select at least one experience level.'); return; }
+    if (!countries.length) { showErr('Select at least one country.'); return; }
+
+    const days       = document.getElementById('days').value;
+    const minSal     = document.getElementById('minSal').value.trim();
+    const extraKw    = document.getElementById('extraKw').value.trim();
+    const sourceMode = getSource();
+    const resultCount = getCount();
+
+    setLoading(true); hideAll(); startSteps(resultCount);
+
+    try {
+      const res = await fetch('/api/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          roles:         roles.flatMap(r => levels.map(l => `${l} ${r}`)),
+          countries,
+          days,
+          minSalary:     minSal,
+          extraKeywords: extraKw,
+          sourceMode,
+          resultCount,
+        }),
+      });
+      const data = await res.json();
+      if (data.error) { showErr(data.error); return; }
+      render(data.jobs || []);
+    } catch(e) {
+      showErr('Request failed: ' + e.message);
+    } finally {
+      clearInterval(stepTimer);
+      setLoading(false);
+    }
+  }
+
+  function render(jobs) {
+    if (!jobs.length) { document.getElementById('emptyBox').classList.add('on'); return; }
+
+    document.getElementById('stTotal').textContent = jobs.length;
+    document.getElementById('stFresh').textContent = jobs.filter(j => isFresh(j.postedDate)).length;
+    document.getElementById('stSal').textContent   = jobs.filter(j => j.salary).length;
+    document.getElementById('stUS').textContent    = jobs.filter(j => US_C.includes(j.country)).length;
+    document.getElementById('stCA').textContent    = jobs.filter(j => CA_C.includes(j.country)).length;
+    document.getElementById('stEU').textContent    = jobs.filter(j => EU_C.includes(j.country)).length;
+    document.getElementById('statsRow').classList.add('on');
+
+    const tbody = document.getElementById('tbody');
+    tbody.innerHTML = '';
+
+    jobs.forEach((j, i) => {
+      const kw    = (j.resumeKeywords||[]).slice(0,5).map(k=>`<span class="tag">${esc(k)}</span>`).join('');
+      const sk    = (j.techSkills||[]).slice(0,5).map(s=>`<span class="tag sk">${esc(s)}</span>`).join('');
+      const sal   = j.salary ? `<span class="sal-val">${esc(j.salary)}</span>` : `<span class="sal-none">—</span>`;
+      const dc    = isFresh(j.postedDate) ? 'fresh' : 'recent';
+      const apply = (j.applyUrl && j.applyUrl.startsWith('http'))
+        ? `<a class="apply-lnk" href="${esc(j.applyUrl)}" target="_blank" rel="noopener">Apply ↗</a>`
+        : `<span class="sal-none">—</span>`;
+      const tr = document.createElement('tr');
+      tr.className = 'row-in';
+      tr.style.animationDelay = `${i * 0.02}s`;
+      tr.innerHTML = `
+        <td style="color:var(--muted)">${i+1}</td>
+        <td><span class="co">${esc(j.company)}</span></td>
+        <td><span class="ttl">${esc(j.title)}</span></td>
+        <td>${countryBadge(j.country)}</td>
+        <td>${sal}</td>
+        <td><span class="dbadge ${dc}">${esc(j.postedDate||'Recent')}</span></td>
+        <td>${getSourceTag(j.applyUrl)}</td>
+        <td>${apply}</td>
+        <td><div class="tags">${kw}</div></td>
+        <td><div class="tags">${sk}</div></td>`;
+      tbody.appendChild(tr);
+    });
+
+    document.getElementById('tblWrap').classList.add('on');
+    document.getElementById('lastRun').textContent = 'Last scan: ' + new Date().toLocaleTimeString();
+    document.getElementById('footTime').textContent = 'Scanned: ' + new Date().toLocaleString();
+  }
+
+  function setLoading(on) {
+    document.getElementById('scanBtn').disabled = on;
+    document.getElementById('btnTxt').textContent = on ? 'Scanning...' : 'Scan for jobs now';
+    document.getElementById('loader').classList.toggle('on', on);
+  }
+
+  function hideAll() {
+    ['errBox','statsRow','tblWrap','emptyBox'].forEach(id => document.getElementById(id).classList.remove('on'));
+  }
+
+  function showErr(msg) {
+    const el = document.getElementById('errBox');
+    el.textContent = '⚠ ' + msg;
+    el.classList.add('on');
+  }
 </script>
 </body>
 </html>
