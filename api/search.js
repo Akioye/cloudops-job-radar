@@ -15,7 +15,6 @@ export default async function handler(req, res) {
 
   const today = new Date().toISOString().split('T')[0];
 
-  // Build country-aware job board list
   const boardMap = {
     'United States': 'LinkedIn, Indeed, Greenhouse, Lever, Workday, Wellfound, Dice',
     'Canada':        'LinkedIn, Indeed Canada, Workopolis, Glassdoor CA, WellFound',
